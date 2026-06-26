@@ -80,7 +80,7 @@ const ParticipantForm = ({
   };
 
   const handleSelect = (member) => {
-    onChange('industryName', member.industryName);
+    onChange('industryName', member.isHonorary ? '' : member.industryName);
     onChange('mobile', member.mobileNo);
     onChange('isHonorary', !!member.isHonorary);
     setSuggestions([]);
@@ -180,10 +180,10 @@ const ParticipantForm = ({
             className={`input-field ${autoFilled ? 'bg-slate-50 dark:bg-slate-700/50' : ''}`}
             value={form.industryName}
             onChange={(e) => handleIndustryChange(e.target.value)}
-            required
+            required={!form.isHonorary}
             placeholder="Type industry name..."
             autoComplete="off"
-            readOnly={autoFilled}
+            readOnly={autoFilled && !form.isHonorary}
           />
           {autoFilled && (
             <div className="flex items-center justify-between mt-1">
