@@ -20,13 +20,21 @@ import honoraryGuestRoutes from './routes/honoraryGuestRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins =
+  process.env.NODE_ENV === 'development'
+    ? true
+    : (process.env.CLIENT_URL || 'http://localhost:5173')
+        .split(',')
+        .map((u) => u.trim().replace(/\/+$/, ''));
+
+console.log('CORS allowed origins:', allowedOrigins);
+
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'development'
-        ? true
-        : process.env.CLIENT_URL?.split(',') || ['http://localhost:5173'],
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(
