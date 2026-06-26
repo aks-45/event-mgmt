@@ -13,7 +13,7 @@ export const initSchema = async () => {
   const statements = sql
     .split(';')
     .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.replace(/--.*$/gm, '').trim().length === 0);
+    .filter((s) => s.length > 0 && s.replace(/--.*$/gm, '').trim().length > 0);
 
   for (const stmt of statements) {
     const cleaned = stmt.replace(/--.*$/gm, '').trim();
