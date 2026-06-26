@@ -5,7 +5,7 @@ import IdCardGenerator from '../components/IdCardGenerator';
 import { createParticipant } from '../services/participantService';
 import PageHeader from '../components/PageHeader';
 
-const emptyForm = { fullName: '', industryName: '', mobile: '' };
+const emptyForm = { fullName: '', industryName: '', mobile: '', isHonorary: false };
 
 const RegistrationPage = () => {
   const [form, setForm] = useState(emptyForm);

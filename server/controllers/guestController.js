@@ -4,17 +4,18 @@ import * as guestRepo from '../repositories/guestRepository.js';
 import { buildQrPayload, generateQrImage } from '../services/qrService.js';
 import { logAudit } from '../services/auditService.js';
 import { toApiDoc } from '../utils/serialize.js';
+import pool from '../config/pool.js';
 
 const GUEST_PREFIX = () => `${process.env.EVENT_PREFIX || 'IIA2026'}-G`;
 
+/**
+ * Generate next guest ID atomically using a PostgreSQL sequence.
+ * Safe for concurrent access from multiple computers.
+ */
 const generateNextGuestId = async () => {
   const prefix = GUEST_PREFIX();
-  const latest = await guestRepo.findLatestGuestId(prefix);
-  let nextNum = 1;
-  if (latest) {
-    const match = latest.match(/-G-(\d+)$/);
-    if (match) nextNum = parseInt(match[1], 10) + 1;
-  }
+  const { rows } = await pool.query(`SELECT nextval('guest_id_seq') AS num`);
+  const nextNum = parseInt(rows[0].num, 10);
   return `${prefix}-${String(nextNum).padStart(6, '0')}`;
 };
 
@@ -24,20 +25,34 @@ export const createGuest = asyncHandler(async (req, res) => {
   if (!honorGuest && !['Cash', 'Online'].includes(paymentMode))
     throw new ApiError(400, 'paymentMode must be Cash or Online');
 
-  const dup = await guestRepo.findGuestByMobile(mobile);
-  if (dup) throw new ApiError(400, `Mobile already registered as guest (${dup.guestId})`);
+  // Check duplicate by mobile
+  const dupMobile = await guestRepo.findGuestByMobile(mobile);
+  if (dupMobile) throw new ApiError(400, `Mobile already registered as guest (${dupMobile.guestId})`);
+
+  // Check duplicate by full name + industry (prevents concurrent double-registration)
+  const dupName = await guestRepo.findGuestByFullNameAndIndustry(fullName, industryName);
+  if (dupName) throw new ApiError(400, `"${fullName}" is already registered as guest (${dupName.guestId})`);
 
   const guestId = await generateNextGuestId();
   const qrPayload = buildQrPayload({ participantId: guestId, name: fullName, industry: industryName || 'Guest' });
   const { qrCodeData, qrImage } = await generateQrImage(qrPayload);
 
-  const guest = await guestRepo.createGuest({
-    guestId, fullName, industryName, mobile, email,
-    paymentMode: honorGuest ? null : paymentMode,
-    amount: honorGuest ? 0 : 1500,
-    isHonorary: !!honorGuest,
-    qrCodeData, qrImage,
-  });
+  let guest;
+  try {
+    guest = await guestRepo.createGuest({
+      guestId, fullName, industryName, mobile, email,
+      paymentMode: honorGuest ? null : paymentMode,
+      amount: honorGuest ? 0 : 1500,
+      isHonorary: !!honorGuest,
+      qrCodeData, qrImage,
+    });
+  } catch (err) {
+    // Handle unique constraint violation from concurrent registration
+    if (err.code === '23505') {
+      throw new ApiError(400, `"${fullName}" is already registered (duplicate detected)`);
+    }
+    throw err;
+  }
 
   await logAudit({ action: 'CREATE', entity: 'Guest', entityId: guest.id, user: req.user, details: { guestId, honorGuest: !!honorGuest }, req });
 

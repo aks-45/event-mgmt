@@ -15,6 +15,7 @@ import exportRoutes from './routes/exportRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import guestRoutes from './routes/guestRoutes.js';
+import honoraryGuestRoutes from './routes/honoraryGuestRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -65,6 +66,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/guests', guestRoutes);
+app.use('/api/honorary-guests', honoraryGuestRoutes);
 
 app.use(errorHandler);
 

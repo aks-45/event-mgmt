@@ -17,6 +17,7 @@ import SettingsPage from './pages/SettingsPage';
 import AuditPage from './pages/AuditPage';
 import CardLayoutPage from './pages/CardLayoutPage';
 import GuestRegistrationPage from './pages/GuestRegistrationPage';
+import HonoraryGuestsPage from './pages/HonoraryGuestsPage';
 import AdminRoute from './components/AdminRoute';
 
 const App = () => {
@@ -46,6 +47,7 @@ const App = () => {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/import" element={<AdminRoute><BulkImportPage /></AdminRoute>} />
         <Route path="/bulk-members" element={<AdminRoute><BulkMembersPage /></AdminRoute>} />
+        <Route path="/honorary-guests" element={<AdminRoute><HonoraryGuestsPage /></AdminRoute>} />
         <Route path="/bulk-print" element={<BulkPrintPage />} />
         <Route path="/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
         <Route path="/card-layout" element={<CardLayoutPage />} />

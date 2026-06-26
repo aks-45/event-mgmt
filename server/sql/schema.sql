@@ -39,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_participants_child_member ON participants (is_chi
 ALTER TABLE participants ADD COLUMN IF NOT EXISTS parent_participant_id VARCHAR(32);
 ALTER TABLE participants ADD COLUMN IF NOT EXISTS is_child_member BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE participants ADD COLUMN IF NOT EXISTS event_id VARCHAR(32) NOT NULL DEFAULT 'IIA2026';
+ALTER TABLE participants ADD COLUMN IF NOT EXISTS is_honorary BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE participants ALTER COLUMN email DROP NOT NULL;
 
 CREATE TABLE IF NOT EXISTS attendance (
@@ -130,3 +131,22 @@ CREATE INDEX IF NOT EXISTS idx_guests_mobile ON guests (mobile);
 ALTER TABLE guests ALTER COLUMN payment_mode DROP NOT NULL;
 ALTER TABLE guests ALTER COLUMN amount SET DEFAULT 0;
 ALTER TABLE guests ADD COLUMN IF NOT EXISTS is_honorary BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS honorary_guests (
+  id UUID PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  mobile_no VARCHAR(20),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_honorary_guests_name ON honorary_guests (full_name);
+
+-- Sequences for atomic ID generation (safe across concurrent connections)
+CREATE SEQUENCE IF NOT EXISTS participant_id_seq START 1;
+CREATE SEQUENCE IF NOT EXISTS guest_id_seq START 1;
+
+-- Unique constraints to prevent duplicate registrations from concurrent computers
+CREATE UNIQUE INDEX IF NOT EXISTS idx_participants_unique_name_industry
+  ON participants (LOWER(full_name), LOWER(industry_name));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_guests_unique_name_industry
+  ON guests (LOWER(full_name), LOWER(COALESCE(industry_name, '')));

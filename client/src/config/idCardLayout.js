@@ -4,14 +4,15 @@
  */
 export const DEFAULT_CARD_LAYOUT = {
   cardWidth: 400,
-  cardWidthCm: 5.4,
-  cardHeightCm: 8.6,
+  cardWidthIn: 3,
+  cardHeightIn: 5,
   aspectRatio: 1672 / 941,
 
   name: {
     topPercent: 40,
+    leftPercent: 5,
     paddingLeft: 0,
-    paddingRight: 45,
+    paddingRight: 0,
     fontSizePx: 25,
     maxWidthPx: 290,
     fontWeight: 700,
@@ -21,8 +22,9 @@ export const DEFAULT_CARD_LAYOUT = {
 
   industry: {
     topPercent: 51,
+    leftPercent: 5,
     paddingLeft: 0,
-    paddingRight: 300,
+    paddingRight: 0,
     fontSizePx: 20.4,
     maxWidthPx: 270,
     lineHeight: 1.35,
@@ -77,13 +79,21 @@ export const loadLayoutFromStorage = () => {
 };
 
 export function mergeCardLayout(overrides = {}) {
+  const cardWidthIn =
+    overrides?.cardWidthIn ?? (overrides?.cardWidthCm ? overrides.cardWidthCm / 2.54 : DEFAULT_CARD_LAYOUT.cardWidthIn);
+  const cardHeightIn =
+    overrides?.cardHeightIn ?? (overrides?.cardHeightCm ? overrides.cardHeightCm / 2.54 : DEFAULT_CARD_LAYOUT.cardHeightIn);
+  const { cardWidthCm, cardHeightCm, ...inchOverrides } = overrides || {};
+
   return {
   ...DEFAULT_CARD_LAYOUT,
-  ...overrides,
-  name: { ...DEFAULT_CARD_LAYOUT.name, ...overrides?.name },
-  industry: { ...DEFAULT_CARD_LAYOUT.industry, ...overrides?.industry },
-  typeLabel: { ...DEFAULT_CARD_LAYOUT.typeLabel, ...overrides?.typeLabel },
-  qr: { ...DEFAULT_CARD_LAYOUT.qr, ...overrides?.qr },
+  ...inchOverrides,
+  cardWidthIn,
+  cardHeightIn,
+  name: { ...DEFAULT_CARD_LAYOUT.name, ...inchOverrides?.name },
+  industry: { ...DEFAULT_CARD_LAYOUT.industry, ...inchOverrides?.industry },
+  typeLabel: { ...DEFAULT_CARD_LAYOUT.typeLabel, ...inchOverrides?.typeLabel },
+  qr: { ...DEFAULT_CARD_LAYOUT.qr, ...inchOverrides?.qr },
   };
 }
 

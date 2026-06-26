@@ -5,8 +5,8 @@ import { liveSearchMembers, checkInExcel } from '../services/participantService'
 import IdCardGenerator from '../components/IdCardGenerator';
 import PageHeader from '../components/PageHeader';
 
-const HONORARY_PASSWORD = '9349';
-const OVERRIDE_PASSWORD = '3119';
+const HONORARY_PASSWORD = '2627';
+const OVERRIDE_PASSWORD = '2627';
 const emptyForm = { fullName: '', industryName: '', mobile: '', paymentMode: 'Cash', honorGuest: false };
 
 const GuestRegistrationPage = () => {
@@ -21,6 +21,7 @@ const GuestRegistrationPage = () => {
   const [warningMsg, setWarningMsg] = useState('');
   const [overridePwd, setOverridePwd] = useState('');
   const [overrideError, setOverrideError] = useState('');
+  const [autoFilled, setAutoFilled] = useState(false);
   const debounceRef = useRef(null);
   const wrapperRef = useRef(null);
 
@@ -39,6 +40,18 @@ const GuestRegistrationPage = () => {
     setHonoraryPwd('');
     if (checked) onChange('paymentMode', '');
     else onChange('paymentMode', 'Cash');
+  };
+
+  const clearAutoFill = () => {
+    setAutoFilled(false);
+    setNames([]);
+    onChange('industryName', '');
+    onChange('fullName', '');
+    onChange('mobile', '');
+    onChange('honorGuest', false);
+    onChange('paymentMode', 'Cash');
+    setHonoraryPwd('');
+    setSuggestions([]); setShowDropdown(false);
   };
 
   const handleIndustryChange = (value) => {
@@ -61,9 +74,20 @@ const GuestRegistrationPage = () => {
     onChange('mobile', member.mobileNo);
     setShowDropdown(false);
     setSuggestions([]);
+    setAutoFilled(true);
     setNames(member.names);
     if (member.names.length === 1) onChange('fullName', member.names[0]);
     else onChange('fullName', '');
+
+    if (member.isHonorary) {
+      onChange('honorGuest', true);
+      onChange('paymentMode', '');
+      setHonoraryPwd(HONORARY_PASSWORD);
+    } else {
+      onChange('honorGuest', false);
+      onChange('paymentMode', 'Cash');
+      setHonoraryPwd('');
+    }
   };
 
   const doRegister = async () => {
@@ -74,6 +98,7 @@ const GuestRegistrationPage = () => {
       setForm(emptyForm);
       setNames([]);
       setHonoraryPwd('');
+      setAutoFilled(false);
       toast.success(`Guest registered: ${res.data.data.guestId}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
@@ -142,19 +167,45 @@ const GuestRegistrationPage = () => {
             <div ref={wrapperRef} className="relative">
               <label className="block text-sm font-medium mb-1">Industry Name <span className="text-slate-400 font-normal">(optional)</span></label>
               <input
-                className="input-field"
+                className={`input-field ${autoFilled ? 'bg-slate-50 dark:bg-slate-700/50' : ''}`}
                 value={form.industryName}
                 onChange={(e) => handleIndustryChange(e.target.value)}
                 onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
                 placeholder="Start typing or leave blank..."
                 autoComplete="off"
+                readOnly={autoFilled}
               />
+              {autoFilled && (
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-slate-400">Auto-filled from selection{form.honorGuest ? ' — Honorary Guest' : ''}</p>
+                  <button type="button" onClick={clearAutoFill} className="text-xs text-red-500 hover:text-red-700 font-medium">Clear</button>
+                </div>
+              )}
               {showDropdown && suggestions.length > 0 && (
                 <ul className="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800 max-h-52 overflow-y-auto">
                   {suggestions.map((m, i) => (
-                    <li key={i} onMouseDown={() => handleSelect(m)} className="cursor-pointer px-4 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
-                      <span className="font-medium text-slate-800 dark:text-slate-100">{m.industryName}</span>
-                      <span className="ml-2 text-slate-400 text-xs">{m.names.join(', ')}</span>
+                    <li
+                      key={i}
+                      onMouseDown={() => handleSelect(m)}
+                      className={`cursor-pointer px-4 py-2.5 text-sm transition-colors ${
+                        m.isHonorary
+                          ? 'bg-gradient-to-r from-gold/10 to-amber-50 hover:from-gold/20 hover:to-amber-100 dark:from-gold/10 dark:to-amber-900/20 dark:hover:from-gold/20 dark:hover:to-amber-900/30 border-l-4 border-gold'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {m.isHonorary && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-gold to-gold-light px-2 py-0.5 text-[10px] font-bold text-navy shadow-sm">
+                            ★ Honorary
+                          </span>
+                        )}
+                        <span className={`font-medium ${m.isHonorary ? 'text-amber-900 dark:text-gold' : 'text-slate-800 dark:text-slate-100'}`}>
+                          {m.isHonorary ? m.names[0] : m.industryName}
+                        </span>
+                        <span className="ml-auto text-slate-400 text-xs">
+                          {m.isHonorary ? m.mobileNo : `${m.names.join(', ')} · ${m.mobileNo}`}
+                        </span>
+                      </div>
                     </li>
                   ))}
                 </ul>

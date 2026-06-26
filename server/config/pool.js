@@ -15,7 +15,10 @@ const env = (key, fallback = '') => {
 
 const pool = new pg.Pool(
   process.env.DATABASE_URL
-    ? { connectionString: env('DATABASE_URL') }
+    ? {
+        connectionString: env('DATABASE_URL'),
+        ssl: { rejectUnauthorized: false },
+      }
     : {
         host: env('PGHOST', 'localhost'),
         port: Number(env('PGPORT', '5432')),

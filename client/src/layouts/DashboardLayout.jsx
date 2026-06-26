@@ -17,6 +17,7 @@ import {
   IconSun,
   IconMoon,
 } from '../components/ui/Icons';
+import { IconStar } from '../components/ui/Icons';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: IconDashboard, end: true },
@@ -30,6 +31,7 @@ const navItems = [
 
 const adminItems = [
   { to: '/bulk-members', label: 'Bulk Members', icon: IconUpload },
+  { to: '/honorary-guests', label: 'Honorary Guests', icon: IconStar },
   { to: '/bulk-print', label: 'Bulk Print', icon: IconPrint },
   { to: '/import', label: 'Bulk Import', icon: IconUpload },
   { to: '/audit', label: 'Audit Logs', icon: IconShield },

@@ -47,7 +47,7 @@ const buildListFilter = ({ search, verified, attendanceStatus }) => {
 };
 
 export const createParticipant = asyncHandler(async (req, res) => {
-  const { fullName, industryName, mobile, email } = req.body;
+  const { fullName, industryName, mobile, email, isHonorary } = req.body;
   await checkDuplicate({ fullName, industryName });
 
   const participantId = await generateNextParticipantId();
@@ -58,15 +58,28 @@ export const createParticipant = asyncHandler(async (req, res) => {
   });
   const { qrCodeData, qrImage } = await generateQrImage(qrPayload);
 
-  const participant = await participantRepo.createParticipant({
-    participantId,
-    fullName,
-    industryName,
-    mobile,
-    email,
-    qrCodeData,
-    qrImage,
-  });
+  let participant;
+  try {
+    participant = await participantRepo.createParticipant({
+      participantId,
+      fullName,
+      industryName,
+      mobile,
+      email,
+      isHonorary,
+      qrCodeData,
+      qrImage,
+    });
+  } catch (err) {
+    // Handle unique constraint violation from concurrent registration on another computer
+    if (err.code === '23505') {
+      throw new ApiError(
+        400,
+        `"${fullName}" from "${industryName}" is already registered (duplicate detected)`
+      );
+    }
+    throw err;
+  }
 
   await logAudit({
     action: 'CREATE',
@@ -124,7 +137,7 @@ export const updateParticipant = asyncHandler(async (req, res) => {
   const existing = await participantRepo.findParticipantById(req.params.id);
   if (!existing) throw new ApiError(404, 'Participant not found');
 
-  const { fullName, industryName, mobile, email } = req.body;
+  const { fullName, industryName, mobile, email, isHonorary } = req.body;
   if (email || mobile) {
     await checkDuplicate({
       fullName: fullName || existing.fullName,
@@ -138,6 +151,7 @@ export const updateParticipant = asyncHandler(async (req, res) => {
     ...(industryName && { industryName }),
     ...(mobile && { mobile }),
     ...(email && { email }),
+    ...(isHonorary !== undefined && { isHonorary }),
   };
 
   if (fullName || industryName) {
@@ -176,12 +190,23 @@ export const addSameIndustryMember = asyncHandler(async (req, res) => {
   const qrPayload = buildQrPayload({ participantId, name: fullName, industry: industryName });
   const { qrCodeData, qrImage } = await generateQrImage(qrPayload);
 
-  const participant = await participantRepo.createParticipant({
-    participantId, fullName, industryName, mobile,
-    email: null, qrCodeData, qrImage,
-    parentParticipantId: source.participantId,
-    isChildMember: true,
-  });
+  let participant;
+  try {
+    participant = await participantRepo.createParticipant({
+      participantId, fullName, industryName, mobile,
+      email: null, qrCodeData, qrImage,
+      parentParticipantId: source.participantId,
+      isChildMember: true,
+    });
+  } catch (err) {
+    if (err.code === '23505') {
+      throw new ApiError(
+        400,
+        `"${fullName}" from "${industryName}" is already registered (duplicate detected)`
+      );
+    }
+    throw err;
+  }
 
   await logAudit({
     action: 'CREATE', entity: 'Participant', entityId: participant.id,

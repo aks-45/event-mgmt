@@ -150,6 +150,10 @@
   .opacity-0-start {
     opacity: 0;
   }
+
+  .id-card-print-only-type {
+    display: none;
+  }
 }
 
 @media print {
@@ -164,7 +168,30 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+    zoom: var(--id-card-print-scale, 1);
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid;
+  }
+  .print-card-template {
+    display: none !important;
+  }
+  .id-card-print-layer {
+    z-index: 1;
+  }
+  .id-card-type-label {
+    display: block !important;
+    visibility: visible !important;
+    white-space: nowrap;
+  }
+  .id-card-screen-type {
+    display: none !important;
+  }
+  .id-card-print-only-type {
+    display: flex !important;
+    color: #000000 !important;
+    z-index: 2;
+    white-space: nowrap;
   }
   .no-print {
     display: none !important;

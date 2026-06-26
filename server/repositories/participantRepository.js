@@ -43,8 +43,8 @@ export const createParticipant = async (data) => {
   const { rows } = await pool.query(
     `INSERT INTO participants (
       id, participant_id, full_name, industry_name, mobile, email,
-      qr_code_data, qr_image, parent_participant_id, is_child_member
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      qr_code_data, qr_image, parent_participant_id, is_child_member, is_honorary
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
     RETURNING *`,
     [
       id,
@@ -57,6 +57,7 @@ export const createParticipant = async (data) => {
       data.qrImage,
       data.parentParticipantId || null,
       data.isChildMember || false,
+      data.isHonorary || false,
     ]
   );
   return mapRow(rows[0]);
@@ -80,6 +81,7 @@ export const updateParticipant = async (id, data) => {
   if (data.qrImage != null) set('qr_image', data.qrImage);
   if (data.isVerified != null) set('is_verified', data.isVerified);
   if (data.attendanceStatus != null) set('attendance_status', data.attendanceStatus);
+  if (data.isHonorary != null) set('is_honorary', data.isHonorary);
 
   fields.push(`updated_at = NOW()`);
   values.push(id);

@@ -241,6 +241,15 @@ const CardLayoutPage = () => {
                 onChange={(v) => updateCardSection(activeCardType.id, 'name', 'topPercent', v)}
               />
               <Slider
+                label="From left"
+                value={activeLayout.name.leftPercent}
+                min={0}
+                max={60}
+                step={0.5}
+                unit="%"
+                onChange={(v) => updateCardSection(activeCardType.id, 'name', 'leftPercent', v)}
+              />
+              <Slider
                 label="Font size"
                 value={activeLayout.name.fontSizePx}
                 min={10}
@@ -248,27 +257,6 @@ const CardLayoutPage = () => {
                 step={0.5}
                 unit="px"
                 onChange={(v) => updateCardSection(activeCardType.id, 'name', 'fontSizePx', v)}
-              />
-              <NumberInput
-                label="Max width (px)"
-                value={activeLayout.name.maxWidthPx}
-                min={100}
-                max={400}
-                onChange={(v) => updateCardSection(activeCardType.id, 'name', 'maxWidthPx', v)}
-              />
-              <NumberInput
-                label="Padding left (px)"
-                value={activeLayout.name.paddingLeft}
-                min={0}
-                max={120}
-                onChange={(v) => updateCardSection(activeCardType.id, 'name', 'paddingLeft', v)}
-              />
-              <NumberInput
-                label="Padding right (px)"
-                value={activeLayout.name.paddingRight}
-                min={0}
-                max={120}
-                onChange={(v) => updateCardSection(activeCardType.id, 'name', 'paddingRight', v)}
               />
             </div>
           </section>
@@ -288,6 +276,17 @@ const CardLayoutPage = () => {
                 }
               />
               <Slider
+                label="From left"
+                value={activeLayout.industry.leftPercent}
+                min={0}
+                max={60}
+                step={0.5}
+                unit="%"
+                onChange={(v) =>
+                  updateCardSection(activeCardType.id, 'industry', 'leftPercent', v)
+                }
+              />
+              <Slider
                 label="Font size"
                 value={activeLayout.industry.fontSizePx}
                 min={8}
@@ -296,33 +295,6 @@ const CardLayoutPage = () => {
                 unit="px"
                 onChange={(v) =>
                   updateCardSection(activeCardType.id, 'industry', 'fontSizePx', v)
-                }
-              />
-              <NumberInput
-                label="Max width (px)"
-                value={activeLayout.industry.maxWidthPx}
-                min={100}
-                max={400}
-                onChange={(v) =>
-                  updateCardSection(activeCardType.id, 'industry', 'maxWidthPx', v)
-                }
-              />
-              <NumberInput
-                label="Padding left (px)"
-                value={activeLayout.industry.paddingLeft}
-                min={0}
-                max={120}
-                onChange={(v) =>
-                  updateCardSection(activeCardType.id, 'industry', 'paddingLeft', v)
-                }
-              />
-              <NumberInput
-                label="Padding right (px)"
-                value={activeLayout.industry.paddingRight}
-                min={0}
-                max={120}
-                onChange={(v) =>
-                  updateCardSection(activeCardType.id, 'industry', 'paddingRight', v)
                 }
               />
             </div>
@@ -376,20 +348,20 @@ const CardLayoutPage = () => {
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <NumberInput
-                  label="Print width (cm)"
-                  value={activeLayout.cardWidthCm}
-                  min={3}
-                  max={15}
+                  label="Print width (in)"
+                  value={activeLayout.cardWidthIn}
+                  min={1}
+                  max={6}
                   step={0.1}
-                  onChange={(v) => updateCardLayout(activeCardType.id, { cardWidthCm: v })}
+                  onChange={(v) => updateCardLayout(activeCardType.id, { cardWidthIn: v })}
                 />
                 <NumberInput
-                  label="Print height (cm)"
-                  value={activeLayout.cardHeightCm}
-                  min={3}
-                  max={20}
+                  label="Print height (in)"
+                  value={activeLayout.cardHeightIn}
+                  min={1}
+                  max={8}
                   step={0.1}
-                  onChange={(v) => updateCardLayout(activeCardType.id, { cardHeightCm: v })}
+                  onChange={(v) => updateCardLayout(activeCardType.id, { cardHeightIn: v })}
                 />
               </div>
               <Slider

@@ -25,6 +25,17 @@ export const findGuestByMobile = async (mobile, excludeId) => {
   return mapRow(rows[0]);
 };
 
+export const findGuestByFullNameAndIndustry = async (fullName, industryName) => {
+  const { rows } = await pool.query(
+    `SELECT * FROM guests
+     WHERE LOWER(full_name) = LOWER($1)
+       AND LOWER(COALESCE(industry_name, '')) = LOWER(COALESCE($2, ''))
+     LIMIT 1`,
+    [fullName, industryName || null]
+  );
+  return mapRow(rows[0]);
+};
+
 export const listGuests = async ({ whereClause = '', params = [], limit, offset, orderDir = 'DESC' }) => {
   const countRes = await pool.query(`SELECT COUNT(*)::int AS total FROM guests ${whereClause}`, params);
   const { rows } = await pool.query(

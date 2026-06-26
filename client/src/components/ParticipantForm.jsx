@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { liveSearchMembers, checkInExcel } from '../services/participantService';
 
-const OVERRIDE_PASSWORD = '3119';
+const OVERRIDE_PASSWORD = '2627';
 
 const ParticipantForm = ({
   form,
@@ -48,21 +48,33 @@ const ParticipantForm = ({
     }, 250);
   };
 
+  const clearAutoFill = () => {
+    setAutoFilled(false);
+    setNames([]); setSelectedNames([]);
+    onChange('industryName', '');
+    onChange('fullName', '');
+    onChange('mobile', '');
+    onChange('isHonorary', false);
+    setSuggestions([]); setActiveField(null);
+  };
+
   const handleIndustryChange = (value) => {
     onChange('industryName', value);
+    onChange('isHonorary', false);
     if (!autoFilled) { setNames([]); setSelectedNames([]); }
-    setAutoFilled(false);
     triggerSearch(value, 'industry');
   };
 
   const handleNameChange = (value) => {
     onChange('fullName', value);
+    onChange('isHonorary', false);
     setAutoFilled(false);
     triggerSearch(value, 'name');
   };
 
   const handleMobileChange = (value) => {
     onChange('mobile', value);
+    onChange('isHonorary', false);
     setAutoFilled(false);
     triggerSearch(value, 'mobile');
   };
@@ -70,6 +82,7 @@ const ParticipantForm = ({
   const handleSelect = (member) => {
     onChange('industryName', member.industryName);
     onChange('mobile', member.mobileNo);
+    onChange('isHonorary', !!member.isHonorary);
     setSuggestions([]);
     setActiveField(null);
     setAutoFilled(true);
@@ -129,9 +142,28 @@ const ParticipantForm = ({
     suggestions.length > 0 && activeField ? (
       <ul className="absolute z-50 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800 max-h-52 overflow-y-auto">
         {suggestions.map((m, i) => (
-          <li key={i} onMouseDown={() => handleSelect(m)} className="cursor-pointer px-4 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">
-            <span className="font-medium text-slate-800 dark:text-slate-100">{m.industryName}</span>
-            <span className="ml-2 text-slate-400 text-xs">{m.names.join(', ')} · {m.mobileNo}</span>
+          <li
+            key={i}
+            onMouseDown={() => handleSelect(m)}
+            className={`cursor-pointer px-4 py-2.5 text-sm transition-colors ${
+              m.isHonorary
+                ? 'bg-gradient-to-r from-gold/10 to-amber-50 hover:from-gold/20 hover:to-amber-100 dark:from-gold/10 dark:to-amber-900/20 dark:hover:from-gold/20 dark:hover:to-amber-900/30 border-l-4 border-gold'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {m.isHonorary && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-gold to-gold-light px-2 py-0.5 text-[10px] font-bold text-navy shadow-sm">
+                  ★ Honorary
+                </span>
+              )}
+              <span className={`font-medium ${m.isHonorary ? 'text-amber-900 dark:text-gold' : 'text-slate-800 dark:text-slate-100'}`}>
+                {m.isHonorary ? m.names[0] : m.industryName}
+              </span>
+              <span className="ml-auto text-slate-400 text-xs">
+                {m.isHonorary ? m.mobileNo : `${m.names.join(', ')} · ${m.mobileNo}`}
+              </span>
+            </div>
           </li>
         ))}
       </ul>
@@ -145,13 +177,20 @@ const ParticipantForm = ({
         <div ref={activeField === 'industry' ? dropdownRef : null} className="relative">
           <label className="block text-sm font-medium mb-1">Industry Name *</label>
           <input
-            className="input-field"
+            className={`input-field ${autoFilled ? 'bg-slate-50 dark:bg-slate-700/50' : ''}`}
             value={form.industryName}
             onChange={(e) => handleIndustryChange(e.target.value)}
             required
             placeholder="Type industry name..."
             autoComplete="off"
+            readOnly={autoFilled}
           />
+          {autoFilled && (
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-slate-400">Auto-filled from selection{form.isHonorary ? ' — Honorary Guest' : ''}</p>
+              <button type="button" onClick={clearAutoFill} className="text-xs text-red-500 hover:text-red-700 font-medium">Clear</button>
+            </div>
+          )}
           {activeField === 'industry' && <DropdownList />}
         </div>
 

@@ -15,7 +15,7 @@ import {
 } from '../services/participantService';
 import { getGuests } from '../services/guestService';
 
-const ADD_MEMBER_PASSWORD = '2230';
+const ADD_MEMBER_PASSWORD = '2627';
 
 const ParticipantsPage = () => {
   const [participants, setParticipants] = useState([]);
