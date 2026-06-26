@@ -3,7 +3,6 @@
 
 databases:
   - name: iia-event-db
-    plan: free          # switch to "starter" for production
     databaseName: iia_event
     user: iia_user
 
@@ -12,7 +11,6 @@ services:
   - type: web
     name: iia-event-api
     runtime: node
-    plan: free          # switch to "starter" for production
     rootDir: server
     buildCommand: npm install && npm run db:init
     startCommand: node server.js
@@ -43,7 +41,6 @@ services:
   - type: web
     name: iia-event-client
     runtime: static
-    plan: free
     rootDir: client
     buildCommand: npm install && npm run build
     staticPublishPath: dist
