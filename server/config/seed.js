@@ -18,6 +18,12 @@ const seed = async () => {
   await participantRepo.deleteAllParticipants();
   await userRepo.deleteAllUsers();
   await eventSettingsRepo.deleteAllSettings();
+  
+  // Clear additional tables for a complete reset
+  await pool.query('DELETE FROM guests');
+  await pool.query('DELETE FROM bulk_members');
+  await pool.query('DELETE FROM honorary_guests');
+  await pool.query('DELETE FROM otp_verifications');
 
   await userRepo.createUser({
     name: 'IIA Admin',
