@@ -29,10 +29,7 @@ services:
       - key: JWT_EXPIRE
         value: 7d
       - key: CLIENT_URL
-        fromService:
-          name: iia-event-client
-          type: static
-          property: url
+        value: https://iia-event-client.onrender.com
       - key: EVENT_NAME
         value: IIA Annual Industrial Meet 2026
       - key: EVENT_PREFIX
@@ -60,7 +57,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        # Set this AFTER deploying the backend.
-        # Value = your backend URL + /api, e.g.:
-        #   https://iia-event-api.onrender.com/api
-        sync: false
+        value: https://iia-event-api.onrender.com/api
